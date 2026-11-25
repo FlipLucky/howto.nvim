@@ -8,7 +8,10 @@ M.opts = { nodes = {}, entries = {} }
 function M.setup(opts)
     opts = opts or {}
     M.opts = { nodes = opts.nodes or {}, entries = opts.entries or {} }
-    package.loaded["howto.registry"] = nil -- next open rebuilds with the new table
+    -- Only touch the registry when it was already loaded: setup() itself must stay free.
+    if package.loaded["howto.registry"] then
+        package.loaded["howto.registry"].reset()
+    end
 end
 
 --- Open the browser, optionally at a path like "edit/delete/word".

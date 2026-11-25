@@ -172,9 +172,23 @@ function M.build(user)
         add_node(n, "howto")
     end
 
+    -- One file per name: when howto is on the runtimepath twice (dev checkout + install),
+    -- the first copy wins instead of every entry showing twice.
+    local function unique(files)
+        local seen, out = {}, {}
+        for _, f in ipairs(files) do
+            local name = vim.fs.basename(f)
+            if not seen[name] then
+                seen[name] = true
+                table.insert(out, f)
+            end
+        end
+        table.sort(out, function(x, y) return vim.fs.basename(x) < vim.fs.basename(y) end)
+        return out
+    end
+
     -- 1. Native content.
-    local native = vim.api.nvim_get_runtime_file("lua/howto/native/*.lua", true)
-    table.sort(native)
+    local native = unique(vim.api.nvim_get_runtime_file("lua/howto/native/*.lua", true))
     for _, file in ipairs(native) do
         local mod, err = load_file(file)
         local name = vim.fn.fnamemodify(file, ":t:r")
@@ -190,8 +204,7 @@ function M.build(user)
     for _, p in ipairs(vim.api.nvim_list_runtime_paths()) do
         installed[vim.fs.basename(p)] = true
     end
-    local pack_files = vim.api.nvim_get_runtime_file("lua/howto/packs/*.lua", true)
-    table.sort(pack_files)
+    local pack_files = unique(vim.api.nvim_get_runtime_file("lua/howto/packs/*.lua", true))
     for _, file in ipairs(pack_files) do
         local name = vim.fn.fnamemodify(file, ":t:r")
         local mod, err = load_file(file)
@@ -248,6 +261,11 @@ function M.build(user)
 end
 
 local cache
+
+--- Forget the built tree; the next get() rebuilds it (used by setup()).
+function M.reset()
+    cache = nil
+end
 
 --- The tree for this session (built on first call).
 function M.get()

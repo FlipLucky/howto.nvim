@@ -128,6 +128,33 @@ T["has = feature hides what this Neovim does not support"] = function()
     h.not_contains(h.text(), "zH1")
 end
 
+T["howto twice on the runtimepath shows every entry once"] = function()
+    -- E.g. a dev checkout plus an installed copy.
+    local root = vim.fn.fnamemodify(debug.getinfo(1, "S").source:sub(2), ":p:h:h")
+    local copy = vim.fn.tempname() .. "/howto.nvim"
+    vim.fn.mkdir(vim.fn.fnamemodify(copy, ":h"), "p")
+    vim.fn.system({ "cp", "-r", root, copy })
+    vim.opt.rtp:append(copy)
+    h.open()
+    h.go("Edit", "d  delete", "w  word")
+    local n = 0
+    for _, l in ipairs(h.lines()) do
+        if l:find("diw ", 1, true) then
+            n = n + 1
+        end
+    end
+    assert(n == 1, "diw listed " .. n .. " times")
+end
+
+T["setup() after the first open takes effect on the next open"] = function()
+    h.open()
+    h.press("q")
+    require("howto").setup({ entries = { { keys = "zLate", at = "edit", label = "added later" } } })
+    h.open()
+    h.go("Edit")
+    h.select("zLate")
+end
+
 T["checkhealth reports problems"] = function()
     require("howto").setup({ entries = { { at = "edit", label = "broken" } } })
     vim.cmd("checkhealth howto")
