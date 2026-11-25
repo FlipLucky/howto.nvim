@@ -1,0 +1,65 @@
+*howto.txt*  Find Neovim keys, commands and recipes by intent
+
+==============================================================================
+CONTENTS                                                      *howto*
+
+You know what you want to do, not which keys do it. howto starts from the
+intent (Move, Edit, Select, Search, Many lines at once, Patterns, …) and
+narrows down in columns until you see the keys, with a strip that explains
+how they are built (d=delete i=inner w=word). It never runs anything.
+
+==============================================================================
+COMMANDS                                                      *:Howto*
+
+:Howto [path]       Open the browser, optionally at a path such as
+                    `edit/delete/word`. <Tab> completes paths.
+
+No mapping is created. Example: >lua
+    vim.keymap.set("n", "<leader>?", "<cmd>Howto<cr>")
+<
+==============================================================================
+KEYS                                                          *howto-keys*
+
+    j k  <Down> <Up>     move in the focused column
+    l  <CR>  <Right>     go deeper
+    h  <BS>  <Left>      go back
+    -                    back to the intents
+    gg  G                first / last item
+    <C-d>  <C-u>         half a column down / up
+    /                    search all entries
+    q  <Esc>             close
+
+==============================================================================
+SETUP                                                         *howto.setup()*
+
+    require("howto").setup({ nodes = { … }, entries = { … } })
+
+Optional. Stores the table; content loads on first open. Entries:
+
+    keys | cmd | steps   exactly one: keys, a command/pattern, or a list of
+                         { keys, explanation } steps
+    at                   a path or a list of paths (several places)
+    label, desc          at least one
+    parts                { { keys, meaning }, … } spelling the keys
+    also                 related keys, shown in the strip
+    mode                 "x", "i", "o", "c" (shown as a prefix)
+    has                  hide unless vim.fn.has(has) is true
+
+Nodes: { path, label, letter, order, desc }. A node with an existing path
+overrides its label, letter, order or desc. Your entries also appear under
+"Mine".
+
+==============================================================================
+PACKS                                                         *howto-packs*
+
+Files in lua/howto/packs/*.lua on the runtimepath, returning
+{ plugin = "name" | { … }, name = "…", nodes = { … }, entries = { … } }.
+A pack loads only when a runtimepath directory named like `plugin` exists.
+Its entries also appear under "Plugins › <name>".
+
+==============================================================================
+HEALTH                                                        *howto-health*
+
+:checkhealth howto   shows active packs and invalid content that was skipped.
+
+ vim:tw=78:ts=8:ft=help:norl:
