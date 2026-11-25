@@ -23,6 +23,7 @@ local function set_highlights()
         HowtoKey = "Function",
         HowtoDim = "Comment",
         HowtoSep = "FloatBorder",
+        HowtoWarn = "DiagnosticWarn",
         HowtoPart1 = "DiagnosticInfo",
         HowtoPart2 = "DiagnosticWarn",
         HowtoPart3 = "DiagnosticOk",
@@ -270,6 +271,17 @@ local function strip_lines(width)
     end
     table.insert(first, { "   · " .. e.source, "HowtoDim" })
     table.insert(out, first)
+
+    -- The key does something else in this setup: say so before teaching it.
+    local buf = S.prev_win and api.nvim_win_is_valid(S.prev_win) and api.nvim_win_get_buf(S.prev_win)
+    local r = buf and require("howto.remap").check(e, buf)
+    if r then
+        table.insert(out, {
+            { "⚠ remapped here: ", "HowtoWarn" },
+            { r.what },
+            { r.from and ("  · " .. r.from) or "", "HowtoDim" },
+        })
+    end
 
     if e.kind == "steps" then
         for i, s in ipairs(e.steps) do

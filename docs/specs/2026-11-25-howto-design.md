@@ -84,6 +84,15 @@ Pack entries also appear under `Plugins › <plugin>`, user entries also under `
 show when non-empty. An `at` path without a node gets an implicit node labelled by its last segment.
 Root intents sort by `order`; other levels keep insertion order (nodes first, then entries).
 
+## Remapped keys (added after the MVP)
+
+For native key entries the strip checks the mapping in the buffer the user came from (so buffer-local
+maps count). A mapping is Neovim's own when it comes from `vim/_core/defaults`, has a `:help …-default`
+desc, was set by a script under `$VIMRUNTIME` (matchit), or is a runtime callback set from Lua outside any
+script (LSP's buffer-local `K`). Anything else shows `⚠ remapped here: <desc|rhs> · <plugin|your config>`.
+Equal-behaviour remaps (e.g. `]q` → cnext + zz) are reported too: it is a fact, not an error.
+Pack and user entries are not checked.
+
 ## Errors
 
 - Invalid nodes/entries are skipped; a pack that fails to load is skipped. Problems are collected,

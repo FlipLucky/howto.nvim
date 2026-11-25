@@ -16,6 +16,10 @@ function M.reset()
             package.loaded[name] = nil
         end
     end
+    for _, m in ipairs(M.maps or {}) do
+        pcall(vim.keymap.del, m[1], m[2], m[3])
+    end
+    M.maps = {}
     vim.o.columns, vim.o.lines = 120, 40
     M.notes = {}
     vim.notify = function(msg, level)
@@ -31,6 +35,12 @@ function M.win()
             return win
         end
     end
+end
+
+-- Like vim.keymap.set, but removed again before the next test.
+function M.map(mode, lhs, rhs, opts)
+    vim.keymap.set(mode, lhs, rhs, opts)
+    table.insert(M.maps, { mode, lhs, opts and opts.buffer and { buffer = opts.buffer } or nil })
 end
 
 function M.open(path)

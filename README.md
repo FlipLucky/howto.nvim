@@ -28,6 +28,9 @@ intent and narrows down, so you also discover what you didn't know existed.
 - **Not only keys.** Commands (`:g/pattern/d`), regex (`\zs`, `\{-}`) and multi-step recipes
   (visual block insert) live in the same tree.
 - **Docs only.** howto never runs anything. You type it yourself; that's how you learn it.
+- **Honest about your setup.** When your config or a plugin maps a key to something else
+  (`<C-l>` → tmux navigation, `s` → disabled by mini.surround), the strip says
+  `⚠ remapped here: …` and names who did it, instead of teaching a key that doesn't do that for you.
 - **Your plugins too.** Plugins with a pack show up in their intents and under *Plugins*, but only
   when they're installed.
 
