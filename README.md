@@ -40,11 +40,13 @@ Neovim 0.10+ (0.12+ recommended: newer defaults are shown only when your Neovim 
 
 ```lua
 -- vim.pack (Neovim 0.12+)
-vim.pack.add({ "https://github.com/FlipLucky/howto.nvim" })
+vim.pack.add({ { src = "https://github.com/FlipLucky/howto.nvim", version = vim.version.range("0.*") } })
 
 -- lazy.nvim
-{ "FlipLucky/howto.nvim", cmd = "Howto" }
+{ "FlipLucky/howto.nvim", cmd = "Howto", version = "*" }
 ```
+
+The version range keeps you on releases; leave it out to follow `main`. See [Compatibility](#compatibility).
 
 No dependencies. No default keymap; pick one:
 
@@ -137,3 +139,22 @@ Included: gitlab.nvim, grug-far.nvim, mini.ai, mini.surround, oil.nvim.
 nvim --clean -l tests/run.lua          # all tests, headless, no dependencies
 nvim --clean -l tests/run.lua search   # only tests whose name contains "search"
 ```
+
+## Compatibility
+
+Releases follow [SemVer](https://semver.org) (`vX.Y.Z` tags, notes in [CHANGELOG.md](CHANGELOG.md)).
+Tested on Neovim 0.10, the latest stable and nightly.
+
+What counts as the API, so changing it is a breaking change:
+
+- the `setup()` table: `nodes`, `entries` and their fields;
+- the pack format (`plugin`, `name`, `nodes`, `entries`);
+- `:Howto [path]` and the `Howto*` highlight groups;
+- **the tree paths** (`edit/delete/word`, `search/replace`, …). Your entries and packs hang on them
+  with `at`. A renamed path doesn't error: your entry would silently land in a new, empty node.
+  So paths are only renamed in a breaking release, or the old path keeps working as an alias.
+
+New intents, entries and packs, and fixes to their text, are not breaking.
+While the version is 0.x, a breaking change bumps the minor version (0.1 → 0.2), so `0.*`
+can still break: pin `0.1.*` if you'd rather not.
+

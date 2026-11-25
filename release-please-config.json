@@ -1,0 +1,13 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "bootstrap-sha": "eff73d15a2dba56190caa8142d747ec194eb3554",
+  "packages": {
+    ".": {
+      "release-type": "simple",
+      "package-name": "howto.nvim",
+      "include-component-in-tag": false,
+      "bump-minor-pre-major": true,
+      "changelog-path": "CHANGELOG.md"
+    }
+  }
+}
