@@ -353,7 +353,7 @@ local function render()
     end
     widths[ncol] = avail - used
     local lines, hls = {}, {}
-    local cursor_row = 1
+    local cursor_row, cursor_col = 1, 0
 
     -- Keep the focused selection visible.
     local lvl = current()
@@ -385,6 +385,7 @@ local function render()
                     end
                     if col.focused and is_sel then
                         cursor_row = row
+                        segs.cursor = true
                     end
                 elseif row == 1 and #items == 0 then
                     segs = fit({ { " No matches", "HowtoDim" } }, w)
@@ -406,6 +407,9 @@ local function render()
             end
             if cell.row_hl then
                 table.insert(line_hls, 1, { byte, byte + len, cell.row_hl })
+            end
+            if cell.cursor then
+                cursor_col = byte -- on the ▌ marker of the focused column
             end
             byte = byte + len
         end
@@ -434,7 +438,7 @@ local function render()
             api.nvim_buf_set_extmark(S.buf, ns, r - 1, hl[1], { end_col = hl[2], hl_group = hl[3], priority = hl[3] == "HowtoSelected" and 90 or 100 })
         end
     end
-    pcall(api.nvim_win_set_cursor, S.win, { cursor_row, 0 })
+    pcall(api.nvim_win_set_cursor, S.win, { cursor_row, cursor_col })
 end
 
 ----------------------------------------------------------------------

@@ -90,6 +90,18 @@ T["k at the top and j at the bottom stay inside the list"] = function()
     assert(h.selected(), "something stays selected at the bottom")
 end
 
+T["the cursor sits on the selection in the focused column"] = function()
+    -- Otherwise the terminal cursor shows up in another column, like a second selection.
+    h.open()
+    h.go("Edit", "d  delete")
+    h.select("\"  quotes")
+    local row, col = unpack(vim.api.nvim_win_get_cursor(h.win()))
+    local line = h.lines()[row]
+    local marker = line:find("▌", 1, true)
+    assert(marker, "cursor row has no selection marker: " .. line)
+    assert(col == marker - 1, ("cursor at byte %d, marker at byte %d in: %s"):format(col, marker - 1, line))
+end
+
 T[":Howto with a path opens at that place"] = function()
     vim.cmd("runtime plugin/howto.lua")
     vim.cmd("Howto edit/delete/word")
