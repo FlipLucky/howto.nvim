@@ -484,17 +484,23 @@ function M.close()
 end
 
 local function search()
+    -- Input plugins (snacks, dressing) open their own window: that focus change must not close us.
+    S.asking = true
     vim.ui.input({ prompt = "Howto search: " }, function(query)
-        if not S or not query or vim.trim(query) == "" then
+        if not S then
+            return
+        end
+        S.asking = false
+        if api.nvim_win_is_valid(S.win) then
+            api.nvim_set_current_win(S.win)
+        end
+        if not query or vim.trim(query) == "" then
             return
         end
         local results = registry.search(S.tree, query)
         local items = vim.tbl_map(function(e) return { entry = e } end, results)
         local node = { label = "Search: " .. query, items = items, children = {}, entries = results }
         table.insert(S.stack, { node = node, idx = 1, top = 1 })
-        if S.win and api.nvim_win_is_valid(S.win) then
-            api.nvim_set_current_win(S.win)
-        end
         render()
     end)
 end
@@ -562,6 +568,10 @@ function M.open(path)
 
     local buf = api.nvim_create_buf(false, true)
     vim.bo[buf].bufhidden = "wipe"
+    -- Decoration plugins would draw inside the columns (indent guides, cursor animation).
+    vim.b[buf].miniindentscope_disable = true
+    vim.b[buf].minianimate_disable = true
+    vim.b[buf].snacks_indent = false
     vim.bo[buf].filetype = "howto"
     local L = layout()
     local prev = api.nvim_get_current_win()
@@ -585,7 +595,7 @@ function M.open(path)
     api.nvim_create_autocmd("WinEnter", {
         group = S.augroup,
         callback = function()
-            if S and api.nvim_get_current_win() ~= S.win then
+            if S and not S.asking and api.nvim_get_current_win() ~= S.win then
                 S.prev_win = nil -- the user went somewhere on purpose; don't pull focus back
                 M.close()
             end

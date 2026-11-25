@@ -75,6 +75,43 @@ T["search lists matching entries from everywhere"] = function()
     assert(vim.startswith(h.selected(), "Move"), "back from search returns to the intents")
 end
 
+T["search works when vim.ui.input opens its own window (snacks, dressing)"] = function()
+    h.open()
+    local orig = vim.ui.input
+    local pending
+    vim.ui.input = function(_, cb)
+        -- Like a floating input plugin: focus moves to a new window, the answer comes later.
+        local buf = vim.api.nvim_create_buf(false, true)
+        local win = vim.api.nvim_open_win(buf, true, { relative = "editor", row = 1, col = 1, width = 20, height = 1 })
+        pending = function(answer)
+            vim.api.nvim_win_close(win, true)
+            cb(answer)
+        end
+    end
+    h.press("/")
+    vim.ui.input = orig
+    assert(pending, "input was not asked")
+    pending("whole word")
+    assert(h.win(), "howto closed while the input window was open")
+    h.contains(h.title(), "whole word")
+    assert(vim.api.nvim_get_current_win() == h.win(), "focus should be back in howto")
+end
+
+T["cancelling a floating input returns to howto"] = function()
+    h.open()
+    local orig = vim.ui.input
+    vim.ui.input = function(_, cb)
+        local buf = vim.api.nvim_create_buf(false, true)
+        local win = vim.api.nvim_open_win(buf, true, { relative = "editor", row = 1, col = 1, width = 20, height = 1 })
+        vim.api.nvim_win_close(win, true)
+        cb(nil)
+    end
+    h.press("/")
+    vim.ui.input = orig
+    assert(h.win(), "howto should still be open")
+    assert(vim.api.nvim_get_current_win() == h.win(), "focus should be back in howto")
+end
+
 T["search without results says so"] = function()
     h.open()
     local orig = vim.ui.input
